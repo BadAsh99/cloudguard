@@ -143,14 +143,8 @@
         }
 
         textarea::placeholder {
-            color: #00d9ff !important;
-            opacity: 1 !important;
-        }
-
-        /* Firefox */
-        textarea::-moz-placeholder {
-            color: #00d9ff !important;
-            opacity: 1 !important;
+            color: #666;
+            opacity: 0.8;
         }
 
         textarea {
@@ -439,12 +433,6 @@
             cursor: pointer;
         }
 
-        /* Placeholder text styling */
-        textarea::placeholder {
-            color: #666;
-            opacity: 0.7;
-        }
-
         code {
             background: #2d2d44;
             padding: 2px 6px;
@@ -494,12 +482,15 @@
                         </div>
                         <div class="form-group">
                             <label>Credentials (JSON)</label>
-                            <div style="background: #1a1a28; padding: 10px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid #00d9ff; color: #888; font-size: 0.85em;">
-                                📋 Example (AWS):<br/>
-                                <code style="color: #00d9ff;">{"aws_access_key_id":"AKIA...","aws_secret_access_key":"wJal...","region_name":"us-east-1"}</code><br/>
-                                Or use empty: <code style="color: #00d9ff;">{}</code> for test mode
+                            <div style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #00d9ff;">
+                                <div style="color: #00d9ff; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
+                                <code style="color: #00d9ff; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
+{"aws_access_key_id": "AKIA...",<br/>
+&nbsp;"aws_secret_access_key": "wJal...",<br/>
+&nbsp;"region_name": "us-east-1"}</code>
+                                <div style="color: #888; font-size: 0.85em;">Or use empty <code style="color: #00d9ff;">{}</code> for test</div>
                             </div>
-                            <textarea id="credentials" placeholder='{"aws_access_key_id": "", "aws_secret_access_key": "", "region_name": "us-east-1"}'>
+                            <textarea id="credentials" placeholder='Paste your AWS credentials here, or leave empty {} for test mode'>
                             </textarea>
                         </div>
                         <button type="button" onclick="executeScan()">▶ Start Scan</button>
@@ -523,12 +514,15 @@
                         </div>
                         <div class="form-group">
                             <label>Credentials (JSON)</label>
-                            <div style="background: #1a1a28; padding: 10px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid #ff4444; color: #888; font-size: 0.85em;">
-                                📋 Example (AWS):<br/>
-                                <code style="color: #ff4444;">{"aws_access_key_id":"AKIA...","aws_secret_access_key":"wJal...","region_name":"us-east-1"}</code><br/>
-                                Or use empty: <code style="color: #ff4444;">{}</code> for test mode
+                            <div style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #ff4444;">
+                                <div style="color: #ff4444; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
+                                <code style="color: #ff4444; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
+{"aws_access_key_id": "AKIA...",<br/>
+&nbsp;"aws_secret_access_key": "wJal...",<br/>
+&nbsp;"region_name": "us-east-1"}</code>
+                                <div style="color: #888; font-size: 0.85em;">Or use empty <code style="color: #ff4444;">{}</code> for test</div>
                             </div>
-                            <textarea id="credentials-rt" placeholder='{"aws_access_key_id": "", "aws_secret_access_key": "", "region_name": "us-east-1"}'>
+                            <textarea id="credentials-rt" placeholder='Paste your AWS credentials here, or leave empty {} for test mode'>
                             </textarea>
                         </div>
                         <div class="checkbox-group">
