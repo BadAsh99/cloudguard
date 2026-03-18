@@ -3,30 +3,6 @@
 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5000
 [33mPress CTRL+C to quit[0m
-127.0.0.1 - - [18/Mar/2026 09:58:00] "HEAD / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:11] "GET / HTTP/1.1" 200 -
-/home/parallels/Code/my-dev-environments/cloudguard/app.py:258: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
-  payloads = [p.dict() for p in scanner.payloads]
-127.0.0.1 - - [18/Mar/2026 09:58:11] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:12] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:12] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:15] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:15] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:15] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:15] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:24] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:24] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:25] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:25] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:29] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:58:29] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:59:09] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:59:09] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:59:09] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-127.0.0.1 - - [18/Mar/2026 09:59:14] "GET /api/payloads/azure HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:59:15] "GET /api/payloads/azure HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 09:59:16] "GET /api/payloads/aws HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 10:00:37] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 10:00:40] "POST /api/scan HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 10:00:43] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Mar/2026 10:00:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:05:18] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:05:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:05:25] "GET / HTTP/1.1" 200 -

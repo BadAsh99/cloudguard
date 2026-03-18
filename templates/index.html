@@ -403,10 +403,84 @@
             </div>
         </div>
 
-        <!-- Results -->
-        <div id="results" class="results" style="display: none;">
-            <h2 id="results-title">Scan Results</h2>
-            <div id="results-content"></div>
+        <!-- Results (with placeholder display) -->
+        <div id="results" class="results">
+            <h2 id="results-title">Scan Results (Placeholder)</h2>
+            <div id="results-content">
+                <!-- Default placeholder categories -->
+                <div id="placeholder-display" style="opacity: 0.4; pointer-events: none;">
+                    <!-- Overall Metrics Placeholder -->
+                    <div class="risk-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Overall Compliance</div>
+                            <div class="metric-value">—%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Risk Score</div>
+                            <div class="metric-value">—</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Vulnerable</div>
+                            <div class="metric-value" style="color: #ff4444;">—</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Resistant</div>
+                            <div class="metric-value" style="color: #44ff44;">—</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Partial</div>
+                            <div class="metric-value" style="color: #ffaa00;">—</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Review</div>
+                            <div class="metric-value" style="color: #00d9ff;">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Category Placeholder -->
+                    <div style="margin-top: 30px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #00d9ff;">
+                        <div style="font-size: 1.1em; font-weight: bold; color: #00d9ff; margin-bottom: 10px;">
+                            Storage & Data Protection (2.1)
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; font-size: 0.9em;">
+                            <div><span style="color: #ff4444;">🔴 Vulnerable:</span> —</div>
+                            <div><span style="color: #ffaa00;">🟡 Partial:</span> —</div>
+                            <div><span style="color: #44ff44;">🟢 Resistant:</span> —</div>
+                            <div><span style="color: #00d9ff;">🔵 Review:</span> —</div>
+                        </div>
+                        <div style="font-weight: bold; margin-bottom: 15px;">Compliance: <span style="color: #00d9ff;">—%</span></div>
+                        
+                        <!-- Sample Finding -->
+                        <div class="finding">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div class="finding-title">Sample Check</div>
+                                <span style="padding: 4px 12px; border-radius: 3px; font-size: 0.85em; background: #ff4444; color: white;">
+                                    VULNERABLE (90%)
+                                </span>
+                            </div>
+                            <div class="finding-detail"><strong>Resource:</strong> (will show after scan)</div>
+                            <div class="finding-detail"><strong>Finding:</strong> (will show after scan)</div>
+                            <div class="finding-detail"><strong>Remediation:</strong> (will show after scan)</div>
+                            <div class="finding-detail"><strong>CIS Control:</strong> 2.1.5</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #00d9ff;">
+                        <div style="font-size: 1.1em; font-weight: bold; color: #00d9ff; margin-bottom: 10px;">
+                            Logging & Monitoring (2.3)
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; font-size: 0.9em;">
+                            <div><span style="color: #ff4444;">🔴 Vulnerable:</span> —</div>
+                            <div><span style="color: #ffaa00;">🟡 Partial:</span> —</div>
+                            <div><span style="color: #44ff44;">🟢 Resistant:</span> —</div>
+                            <div><span style="color: #00d9ff;">🔵 Review:</span> —</div>
+                        </div>
+                        <div style="font-weight: bold; margin-bottom: 15px;">Compliance: <span style="color: #00d9ff;">—%</span></div>
+                    </div>
+
+                    <p style="color: #888; margin-top: 20px; text-align: center;">← Run a scan to see real results</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -466,9 +540,7 @@
                 return;
             }
 
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Running scan...</div>';
-            resultsDiv.style.display = 'block';
+            document.getElementById('results-content').innerHTML = '<div class="loading"><div class="spinner"></div> Running scan...</div>';
 
             fetch('/api/scan', {
                 method: 'POST',
@@ -485,7 +557,7 @@
                     displayResults(data);
                 })
                 .catch(err => {
-                    resultsDiv.innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
+                    document.getElementById('results-content').innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
                 });
         }
 
@@ -507,9 +579,7 @@
                 return;
             }
 
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Executing red-team simulation...</div>';
-            resultsDiv.style.display = 'block';
+            document.getElementById('results-content').innerHTML = '<div class="loading"><div class="spinner"></div> Executing red-team simulation...</div>';
 
             fetch('/api/redteam', {
                 method: 'POST',
@@ -527,13 +597,16 @@
                     displayRedTeamResults(data);
                 })
                 .catch(err => {
-                    resultsDiv.innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
+                    document.getElementById('results-content').innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
                 });
         }
 
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
             const categories = data.categories || [];
+            
+            // Hide placeholder
+            document.getElementById('placeholder-display').style.display = 'none';
 
             let html = `<h2>Scan Results - ${data.provider.toUpperCase()}</h2>`;
 
@@ -602,7 +675,7 @@
                 `).join('');
             }
 
-            resultsDiv.innerHTML = html;
+            document.getElementById('results-content').innerHTML = html;
         }
 
         function getStatusColor(status) {
@@ -616,9 +689,11 @@
         }
 
         function displayRedTeamResults(data) {
-            const resultsDiv = document.getElementById('results');
             const results = data.exploit_results || [];
             const impact = data.impact_simulation || {};
+            
+            // Hide placeholder
+            document.getElementById('placeholder-display').style.display = 'none';
 
             let html = `<h2>Red-Team Results - ${data.provider.toUpperCase()}</h2>`;
 
@@ -659,7 +734,7 @@
                 `).join('');
             }
 
-            resultsDiv.innerHTML = html;
+            document.getElementById('results-content').innerHTML = html;
         }
 
         // Initialize
