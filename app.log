@@ -6,3 +6,10 @@
 127.0.0.1 - - [18/Mar/2026 10:48:09] "GET / HTTP/1.1" 200 -
 127.0.0.1 - - [18/Mar/2026 10:48:14] "GET / HTTP/1.1" 200 -
 127.0.0.1 - - [18/Mar/2026 10:48:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:48:33] "GET / HTTP/1.1" 200 -
+/home/parallels/Code/my-dev-environments/cloudguard/app.py:258: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.5/migration/
+  payloads = [p.dict() for p in scanner.payloads]
+127.0.0.1 - - [18/Mar/2026 10:48:33] "GET /api/payloads/aws HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:48:38] "GET /api/payloads/azure HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:48:41] "GET /api/payloads/gcp HTTP/1.1" 200 -
+127.0.0.1 - - [18/Mar/2026 10:48:45] "GET /api/payloads/aws HTTP/1.1" 200 -
