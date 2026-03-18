@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudGuard - Cloud Red-Teaming & Compliance Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .mode-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: 2px solid #444;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .mode-btn.scan {
+            color: #00d9ff;
+            background: transparent;
+        }
+
+        .mode-btn.scan.active {
+            background: #00d9ff;
+            color: #1e1e2e;
+            border-color: #00d9ff;
+        }
+
+        .mode-btn.redteam {
+            color: #ff4444;
+            background: transparent;
+        }
+
+        .mode-btn.redteam.active {
+            background: #ff4444;
+            color: #1e1e2e;
+            border-color: #ff4444;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Provider Selection */
+        .provider-select {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .provider-btn {
+            padding: 10px 20px;
+            background: #2d2d44;
+            border: 2px solid #444;
+            color: #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .provider-btn.active {
+            background: #00d9ff;
+            color: #1e1e2e;
+            border-color: #00d9ff;
+        }
+
+        .provider-btn:hover {
+            border-color: #00d9ff;
+        }
+
+        /* Main Content */
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: #2d2d44;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .panel h2 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .panel.redteam h2 {
+            color: #ff4444;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #1e1e2e;
+            border: 1px solid #444;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #00d9ff;
+            color: #1e1e2e;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background: #00b8cc;
+            transform: translateY(-2px);
+        }
+
+        button.redteam-btn {
+            background: #ff4444;
+        }
+
+        button.redteam-btn:hover {
+            background: #cc0000;
+        }
+
+        /* Results */
+        .results {
+            background: #2d2d44;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .results h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+        }
+
+        .finding {
+            background: #1e1e2e;
+            border-left: 4px solid #ff4444;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .finding.low {
+            border-left-color: #44ff44;
+        }
+
+        .finding.medium {
+            border-left-color: #ffaa00;
+        }
+
+        .finding.high {
+            border-left-color: #ff6666;
+        }
+
+        .finding.critical {
+            border-left-color: #ff0000;
+        }
+
+        .finding-title {
+            font-weight: bold;
+            color: #00d9ff;
+            margin-bottom: 5px;
+        }
+
+        .finding-detail {
+            color: #aaa;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+
+        .risk-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric {
+            background: #1e1e2e;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #00d9ff;
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .metric-value {
+            color: #00d9ff;
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .warning {
+            background: #3d2d00;
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #444;
+            border-top: 3px solid #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☁️ CloudGuard</h1>
+            <p class="subtitle">Cloud Red-Teaming & Compliance Scanner</p>
+        </header>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="mode-btn scan active" onclick="setMode('scan')">🔍 Scan Mode</button>
+            <button class="mode-btn redteam" onclick="setMode('redteam')">⚔️ Red-Team Mode</button>
+        </div>
+
+        <!-- Provider Selection -->
+        <div class="provider-select">
+            <button class="provider-btn active" onclick="setProvider('aws')">AWS</button>
+            <button class="provider-btn" onclick="setProvider('azure')">Azure</button>
+            <button class="provider-btn" onclick="setProvider('gcp')">GCP</button>
+        </div>
+
+        <div class="content">
+            <!-- Left Panel: Input -->
+            <div id="scan-panel" class="panel">
+                <h2>🔍 Scan Configuration</h2>
+                <form id="scan-form">
+                    <div class="form-group">
+                        <label>Cloud Provider</label>
+                        <select id="provider" onchange="updatePayloads()">
+                            <option value="aws">AWS</option>
+                            <option value="azure">Azure</option>
+                            <option value="gcp">GCP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Credentials (JSON)</label>
+                        <textarea id="credentials" placeholder='{"access_key": "...", "secret": "..."}'>
+                        </textarea>
+                    </div>
+                    <button type="button" onclick="executeScan()">Start Scan</button>
+                </form>
+            </div>
+
+            <div id="redteam-panel" class="panel redteam" style="display: none;">
+                <h2>⚔️ Red-Team Configuration</h2>
+                <div class="warning">
+                    ⚠️ <strong>Warning:</strong> Red-Team mode will execute <strong>active exploitation</strong> 
+                    against real cloud resources. This may modify data or resources. Use with caution.
+                </div>
+                <form id="redteam-form">
+                    <div class="form-group">
+                        <label>Cloud Provider</label>
+                        <select id="provider-rt">
+                            <option value="aws">AWS</option>
+                            <option value="azure">Azure</option>
+                            <option value="gcp">GCP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Credentials (JSON)</label>
+                        <textarea id="credentials-rt" placeholder='{"access_key": "...", "secret": "..."}'>
+                        </textarea>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="confirm-exploitation">
+                        <label for="confirm-exploitation">I confirm this is authorized exploitation</label>
+                    </div>
+                    <button type="button" class="redteam-btn" onclick="executeRedTeam()" disabled>
+                        🎯 Execute Red-Team
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Panel: Payloads -->
+            <div class="panel">
+                <h2>📋 Available Payloads</h2>
+                <div id="payloads-list"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="results" style="display: none;">
+            <h2 id="results-title">Scan Results</h2>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'scan';
+        let currentProvider = 'aws';
+        let scanFindings = [];
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            if (mode === 'scan') {
+                document.querySelector('.mode-btn.scan').classList.add('active');
+                document.getElementById('scan-panel').style.display = 'block';
+                document.getElementById('redteam-panel').style.display = 'none';
+            } else {
+                document.querySelector('.mode-btn.redteam').classList.add('active');
+                document.getElementById('scan-panel').style.display = 'none';
+                document.getElementById('redteam-panel').style.display = 'block';
+            }
+        }
+
+        function setProvider(provider) {
+            currentProvider = provider;
+            document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('provider').value = provider;
+            document.getElementById('provider-rt').value = provider;
+            updatePayloads();
+        }
+
+        function updatePayloads() {
+            const provider = document.getElementById('provider').value;
+            fetch(`/api/payloads/${provider}`)
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('payloads-list');
+                    list.innerHTML = data.payloads.map(p => `
+                        <div style="margin-bottom: 15px; padding: 10px; background: #1e1e2e; border-radius: 4px;">
+                            <div style="font-weight: bold; color: #00d9ff;">${p.name}</div>
+                            <div style="font-size: 0.9em; color: #888; margin-top: 5px;">${p.description}</div>
+                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">CIS: ${p.cis_control}</div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function executeScan() {
+            const provider = document.getElementById('provider').value;
+            const credentialsStr = document.getElementById('credentials').value;
+            
+            let credentials = {};
+            try {
+                credentials = credentialsStr ? JSON.parse(credentialsStr) : {};
+            } catch (e) {
+                alert('Invalid JSON in credentials field');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Running scan...</div>';
+            resultsDiv.style.display = 'block';
+
+            fetch('/api/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: provider,
+                    credentials: credentials,
+                    mode: 'scan'
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    scanFindings = data.findings || [];
+                    displayResults(data);
+                })
+                .catch(err => {
+                    resultsDiv.innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
+                });
+        }
+
+        function executeRedTeam() {
+            const provider = document.getElementById('provider-rt').value;
+            const credentialsStr = document.getElementById('credentials-rt').value;
+            const confirmed = document.getElementById('confirm-exploitation').checked;
+
+            if (!confirmed) {
+                alert('Please confirm you have authorization to conduct red-team testing');
+                return;
+            }
+
+            let credentials = {};
+            try {
+                credentials = credentialsStr ? JSON.parse(credentialsStr) : {};
+            } catch (e) {
+                alert('Invalid JSON in credentials field');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Executing red-team simulation...</div>';
+            resultsDiv.style.display = 'block';
+
+            fetch('/api/redteam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: provider,
+                    credentials: credentials,
+                    mode: 'redteam',
+                    findings: scanFindings,
+                    confirm_exploitation: confirmed
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    displayRedTeamResults(data);
+                })
+                .catch(err => {
+                    resultsDiv.innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
+                });
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const findings = data.findings || [];
+            const metrics = data.risk_metrics || {};
+
+            let html = `<h2>Scan Results - ${data.provider.toUpperCase()}</h2>`;
+
+            // Risk Metrics
+            html += `
+                <div class="risk-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Compliance Score</div>
+                        <div class="metric-value">${metrics.compliance_percentage || 0}%</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Risk Score</div>
+                        <div class="metric-value">${metrics.risk_score || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Critical Issues</div>
+                        <div class="metric-value">${metrics.critical_issues || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">High Issues</div>
+                        <div class="metric-value">${metrics.high_issues || 0}</div>
+                    </div>
+                </div>
+            `;
+
+            // Findings
+            if (findings.length === 0) {
+                html += '<p style="color: #888; margin-top: 20px;">No findings (scan infrastructure not yet implemented)</p>';
+            } else {
+                html += findings.map(f => `
+                    <div class="finding ${f.severity}">
+                        <div class="finding-title">${f.check_name}</div>
+                        <div class="finding-detail"><strong>Resource:</strong> ${f.resource}</div>
+                        <div class="finding-detail"><strong>Finding:</strong> ${f.finding}</div>
+                        <div class="finding-detail"><strong>Remediation:</strong> ${f.remediation}</div>
+                        <div class="finding-detail"><strong>Severity:</strong> <span style="color: #ff4444;">${f.severity.toUpperCase()}</span></div>
+                    </div>
+                `).join('');
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayRedTeamResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const results = data.exploit_results || [];
+            const impact = data.impact_simulation || {};
+
+            let html = `<h2>Red-Team Results - ${data.provider.toUpperCase()}</h2>`;
+
+            // Impact Simulation
+            html += `
+                <div class="risk-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Data Exposure Risk</div>
+                        <div class="metric-value">${impact.data_exposure_risk || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Privilege Escalation Risk</div>
+                        <div class="metric-value">${impact.privilege_escalation_risk || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Lateral Movement Risk</div>
+                        <div class="metric-value">${impact.lateral_movement_risk || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Persistence Risk</div>
+                        <div class="metric-value">${impact.persistence_risk || 0}</div>
+                    </div>
+                </div>
+            `;
+
+            // Exploit Results
+            if (results.length === 0) {
+                html += '<p style="color: #888; margin-top: 20px;">No exploits executed (exploitation logic not yet implemented)</p>';
+            } else {
+                html += results.map(r => `
+                    <div class="finding">
+                        <div class="finding-title">${r.exploit_id}</div>
+                        <div class="finding-detail"><strong>Target:</strong> ${r.target_resource}</div>
+                        <div class="finding-detail"><strong>Status:</strong> <span style="color: #ff4444;">${r.status.toUpperCase()}</span></div>
+                        <div class="finding-detail"><strong>Impact:</strong> ${r.impact_level}</div>
+                        <div class="finding-detail"><strong>Message:</strong> ${r.message}</div>
+                    </div>
+                `).join('');
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Initialize
+        updatePayloads();
+
+        // Enable/disable red-team button
+        document.getElementById('confirm-exploitation').addEventListener('change', function() {
+            document.querySelector('.redteam-btn').disabled = !this.checked;
+        });
+    </script>
+</body>
+</html>
