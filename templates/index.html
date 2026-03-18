@@ -20,26 +20,26 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             border-bottom: 2px solid #444;
             padding-bottom: 20px;
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 2.2em;
             color: #00d9ff;
             margin-bottom: 10px;
         }
 
         .subtitle {
             color: #888;
-            font-size: 1.1em;
+            font-size: 1em;
         }
 
         /* Mode Toggle */
@@ -47,12 +47,12 @@
             display: flex;
             gap: 20px;
             justify-content: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .mode-btn {
-            padding: 12px 30px;
-            font-size: 1em;
+            padding: 10px 25px;
+            font-size: 0.95em;
             border: 2px solid #444;
             border-radius: 5px;
             cursor: pointer;
@@ -63,7 +63,6 @@
 
         .mode-btn.scan {
             color: #00d9ff;
-            background: transparent;
         }
 
         .mode-btn.scan.active {
@@ -74,7 +73,6 @@
 
         .mode-btn.redteam {
             color: #ff4444;
-            background: transparent;
         }
 
         .mode-btn.redteam.active {
@@ -83,46 +81,12 @@
             border-color: #ff4444;
         }
 
-        .mode-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        /* Provider Selection */
-        .provider-select {
-            margin-bottom: 30px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .provider-btn {
-            padding: 10px 20px;
-            background: #2d2d44;
-            border: 2px solid #444;
-            color: #e0e0e0;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .provider-btn.active {
-            background: #00d9ff;
-            color: #1e1e2e;
-            border-color: #00d9ff;
-        }
-
-        .provider-btn:hover {
-            border-color: #00d9ff;
-        }
-
-        /* Main Content */
-        .content {
+        /* Main Layout: 3 columns */
+        .main-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: 1fr 1fr 400px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .panel {
@@ -135,7 +99,7 @@
         .panel h2 {
             color: #00d9ff;
             margin-bottom: 15px;
-            font-size: 1.3em;
+            font-size: 1.2em;
         }
 
         .panel.redteam h2 {
@@ -151,6 +115,7 @@
             margin-bottom: 8px;
             color: #aaa;
             font-weight: bold;
+            font-size: 0.9em;
         }
 
         input[type="text"],
@@ -164,10 +129,11 @@
             color: #e0e0e0;
             border-radius: 4px;
             font-family: monospace;
+            font-size: 0.9em;
         }
 
         textarea {
-            min-height: 100px;
+            min-height: 80px;
             resize: vertical;
         }
 
@@ -181,12 +147,25 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1em;
+            font-size: 0.95em;
+            margin-top: 5px;
         }
 
         button:hover {
             background: #00b8cc;
             transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: #444;
+            color: #e0e0e0;
+            font-size: 0.85em;
+            padding: 8px;
+            margin-top: 3px;
+        }
+
+        button.secondary:hover {
+            background: #555;
         }
 
         button.redteam-btn {
@@ -197,13 +176,77 @@
             background: #cc0000;
         }
 
-        /* Results */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Payload Selector */
+        .payload-selector {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 10px;
+            background: #1e1e2e;
+        }
+
+        .payload-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #2d2d44;
+            border-radius: 4px;
+            border-left: 3px solid #00d9ff;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .payload-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .payload-info {
+            flex: 1;
+        }
+
+        .payload-name {
+            font-weight: bold;
+            color: #00d9ff;
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+
+        .payload-desc {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .payload-control {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            justify-content: space-between;
+        }
+
+        .payload-control button {
+            flex: 1;
+            margin: 0;
+            padding: 8px;
+            font-size: 0.85em;
+        }
+
+        /* Results Panel */
         .results {
             background: #2d2d44;
             border: 1px solid #444;
             border-radius: 8px;
             padding: 20px;
-            margin-top: 30px;
+            grid-column: 1 / -1;
         }
 
         .results h2 {
@@ -211,11 +254,79 @@
             margin-bottom: 20px;
         }
 
-        .finding {
+        /* Risk Metrics Grid */
+        .risk-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .metric {
             background: #1e1e2e;
-            border-left: 4px solid #ff4444;
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 4px solid #00d9ff;
+            text-align: center;
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            color: #00d9ff;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        /* Categories */
+        .category-section {
+            margin-bottom: 25px;
             padding: 15px;
-            margin-bottom: 15px;
+            background: #1e1e2e;
+            border-radius: 8px;
+            border-left: 4px solid #00d9ff;
+        }
+
+        .category-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #00d9ff;
+            margin-bottom: 12px;
+        }
+
+        .category-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+
+        .category-stats div {
+            padding: 8px;
+            background: #2d2d44;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .category-compliance {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #2d2d44;
+            border-radius: 4px;
+        }
+
+        /* Finding Cards */
+        .finding {
+            background: #2d2d44;
+            border-left: 4px solid #ff4444;
+            padding: 12px;
+            margin-bottom: 10px;
             border-radius: 4px;
         }
 
@@ -235,42 +346,52 @@
             border-left-color: #ff0000;
         }
 
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
         .finding-title {
             font-weight: bold;
             color: #00d9ff;
-            margin-bottom: 5px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
         }
 
         .finding-detail {
             color: #aaa;
-            font-size: 0.9em;
-            margin: 5px 0;
+            font-size: 0.85em;
+            margin: 4px 0;
         }
 
-        .risk-metrics {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .metric {
-            background: #1e1e2e;
-            padding: 15px;
-            border-radius: 4px;
-            border-left: 4px solid #00d9ff;
-        }
-
-        .metric-label {
+        .loading {
+            text-align: center;
             color: #888;
-            font-size: 0.9em;
+            padding: 40px 20px;
         }
 
-        .metric-value {
-            color: #00d9ff;
-            font-size: 2em;
-            font-weight: bold;
-            margin-top: 5px;
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 4px solid #444;
+            border-top: 4px solid #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .warning {
@@ -280,46 +401,31 @@
             padding: 12px;
             border-radius: 4px;
             margin-bottom: 15px;
+            font-size: 0.9em;
         }
 
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 15px;
         }
 
         input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
         }
 
-        .loading {
-            text-align: center;
-            color: #888;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #444;
-            border-top: 3px solid #00d9ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         @media (max-width: 768px) {
-            .content {
+            .main-grid {
                 grid-template-columns: 1fr;
-            }
-            h1 {
-                font-size: 1.8em;
             }
         }
     </style>
@@ -337,15 +443,9 @@
             <button class="mode-btn redteam" onclick="setMode('redteam')">⚔️ Red-Team Mode</button>
         </div>
 
-        <!-- Provider Selection -->
-        <div class="provider-select">
-            <button class="provider-btn active" onclick="setProvider('aws')">AWS</button>
-            <button class="provider-btn" onclick="setProvider('azure')">Azure</button>
-            <button class="provider-btn" onclick="setProvider('gcp')">GCP</button>
-        </div>
-
-        <div class="content">
-            <!-- Left Panel: Input -->
+        <!-- Main Grid: Config + Payloads + Results -->
+        <div class="main-grid">
+            <!-- Left: Scan Configuration -->
             <div id="scan-panel" class="panel">
                 <h2>🔍 Scan Configuration</h2>
                 <form id="scan-form">
@@ -362,15 +462,15 @@
                         <textarea id="credentials" placeholder='{"access_key": "...", "secret": "..."}'>
                         </textarea>
                     </div>
-                    <button type="button" onclick="executeScan()">Start Scan</button>
+                    <button type="button" onclick="executeScan()">▶ Start Scan</button>
                 </form>
             </div>
 
+            <!-- Middle: Red-Team Configuration (hidden by default) -->
             <div id="redteam-panel" class="panel redteam" style="display: none;">
                 <h2>⚔️ Red-Team Configuration</h2>
                 <div class="warning">
-                    ⚠️ <strong>Warning:</strong> Red-Team mode will execute <strong>active exploitation</strong> 
-                    against real cloud resources. This may modify data or resources. Use with caution.
+                    ⚠️ <strong>Warning:</strong> Red-Team mode will execute <strong>active exploitation</strong>. Use with caution.
                 </div>
                 <form id="redteam-form">
                     <div class="form-group">
@@ -386,9 +486,9 @@
                         <textarea id="credentials-rt" placeholder='{"access_key": "...", "secret": "..."}'>
                         </textarea>
                     </div>
-                    <div class="form-group checkbox-group">
+                    <div class="checkbox-group">
                         <input type="checkbox" id="confirm-exploitation">
-                        <label for="confirm-exploitation">I confirm this is authorized exploitation</label>
+                        <label for="confirm-exploitation" style="margin: 0;">I confirm this is authorized</label>
                     </div>
                     <button type="button" class="redteam-btn" onclick="executeRedTeam()" disabled>
                         🎯 Execute Red-Team
@@ -396,15 +496,19 @@
                 </form>
             </div>
 
-            <!-- Right Panel: Payloads -->
+            <!-- Right: Payload Selector -->
             <div class="panel">
-                <h2>📋 Available Payloads</h2>
-                <div id="payloads-list"></div>
+                <h2>📋 Select Payloads</h2>
+                <div class="payload-control">
+                    <button class="secondary" onclick="selectAllPayloads()">Select All</button>
+                    <button class="secondary" onclick="deselectAllPayloads()">Deselect All</button>
+                </div>
+                <div class="payload-selector" id="payloads-list"></div>
             </div>
         </div>
 
-        <!-- Results (with placeholder display) -->
-        <div id="results" class="results">
+        <!-- Results Panel (Full Width) -->
+        <div class="results">
             <h2 id="results-title">Scan Results (Placeholder)</h2>
             <div id="results-content">
                 <!-- Default placeholder categories -->
@@ -438,47 +542,40 @@
                     </div>
 
                     <!-- Category Placeholder -->
-                    <div style="margin-top: 30px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #00d9ff;">
-                        <div style="font-size: 1.1em; font-weight: bold; color: #00d9ff; margin-bottom: 10px;">
-                            Storage & Data Protection (2.1)
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; font-size: 0.9em;">
+                    <div class="category-section">
+                        <div class="category-title">Storage & Data Protection (2.1)</div>
+                        <div class="category-stats">
                             <div><span style="color: #ff4444;">🔴 Vulnerable:</span> —</div>
                             <div><span style="color: #ffaa00;">🟡 Partial:</span> —</div>
                             <div><span style="color: #44ff44;">🟢 Resistant:</span> —</div>
                             <div><span style="color: #00d9ff;">🔵 Review:</span> —</div>
                         </div>
-                        <div style="font-weight: bold; margin-bottom: 15px;">Compliance: <span style="color: #00d9ff;">—%</span></div>
+                        <div class="category-compliance">Compliance: <span style="color: #00d9ff;">—%</span></div>
                         
                         <!-- Sample Finding -->
-                        <div class="finding">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div class="finding critical">
+                            <div class="finding-header">
                                 <div class="finding-title">Sample Check</div>
-                                <span style="padding: 4px 12px; border-radius: 3px; font-size: 0.85em; background: #ff4444; color: white;">
-                                    VULNERABLE (90%)
-                                </span>
+                                <span class="status-badge" style="background: #ff4444;">VULNERABLE (90%)</span>
                             </div>
                             <div class="finding-detail"><strong>Resource:</strong> (will show after scan)</div>
                             <div class="finding-detail"><strong>Finding:</strong> (will show after scan)</div>
-                            <div class="finding-detail"><strong>Remediation:</strong> (will show after scan)</div>
                             <div class="finding-detail"><strong>CIS Control:</strong> 2.1.5</div>
                         </div>
                     </div>
 
-                    <div style="margin-top: 30px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #00d9ff;">
-                        <div style="font-size: 1.1em; font-weight: bold; color: #00d9ff; margin-bottom: 10px;">
-                            Logging & Monitoring (2.3)
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; font-size: 0.9em;">
+                    <div class="category-section">
+                        <div class="category-title">Logging & Monitoring (2.3)</div>
+                        <div class="category-stats">
                             <div><span style="color: #ff4444;">🔴 Vulnerable:</span> —</div>
                             <div><span style="color: #ffaa00;">🟡 Partial:</span> —</div>
                             <div><span style="color: #44ff44;">🟢 Resistant:</span> —</div>
                             <div><span style="color: #00d9ff;">🔵 Review:</span> —</div>
                         </div>
-                        <div style="font-weight: bold; margin-bottom: 15px;">Compliance: <span style="color: #00d9ff;">—%</span></div>
+                        <div class="category-compliance">Compliance: <span style="color: #00d9ff;">—%</span></div>
                     </div>
 
-                    <p style="color: #888; margin-top: 20px; text-align: center;">← Run a scan to see real results</p>
+                    <p style="color: #888; margin-top: 20px; text-align: center;">← Select payloads & run scan to see real results</p>
                 </div>
             </div>
         </div>
@@ -486,8 +583,8 @@
 
     <script>
         let currentMode = 'scan';
-        let currentProvider = 'aws';
-        let scanFindings = [];
+        let selectedPayloads = new Set();
+        let allPayloads = {};
 
         function setMode(mode) {
             currentMode = mode;
@@ -503,29 +600,54 @@
             }
         }
 
-        function setProvider(provider) {
-            currentProvider = provider;
-            document.querySelectorAll('.provider-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('provider').value = provider;
-            document.getElementById('provider-rt').value = provider;
-            updatePayloads();
-        }
-
         function updatePayloads() {
             const provider = document.getElementById('provider').value;
             fetch(`/api/payloads/${provider}`)
                 .then(res => res.json())
                 .then(data => {
-                    const list = document.getElementById('payloads-list');
-                    list.innerHTML = data.payloads.map(p => `
-                        <div style="margin-bottom: 15px; padding: 10px; background: #1e1e2e; border-radius: 4px;">
-                            <div style="font-weight: bold; color: #00d9ff;">${p.name}</div>
-                            <div style="font-size: 0.9em; color: #888; margin-top: 5px;">${p.description}</div>
-                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">CIS: ${p.cis_control}</div>
-                        </div>
-                    `).join('');
+                    allPayloads[provider] = data.payloads || [];
+                    renderPayloadSelector(provider);
                 });
+        }
+
+        function renderPayloadSelector(provider) {
+            const payloads = allPayloads[provider] || [];
+            const list = document.getElementById('payloads-list');
+            
+            list.innerHTML = payloads.map(p => `
+                <div class="payload-item">
+                    <input type="checkbox" id="payload-${p.payload_id}" 
+                           onchange="togglePayload('${p.payload_id}', this.checked)"
+                           data-provider="${provider}">
+                    <div class="payload-info">
+                        <div class="payload-name">${p.name}</div>
+                        <div class="payload-desc">${p.description}</div>
+                        <div style="font-size: 0.75em; color: #666; margin-top: 3px;">CIS: ${p.cis_control}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function togglePayload(payloadId, checked) {
+            if (checked) {
+                selectedPayloads.add(payloadId);
+            } else {
+                selectedPayloads.delete(payloadId);
+            }
+        }
+
+        function selectAllPayloads() {
+            document.querySelectorAll('#payloads-list input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+                selectedPayloads.add(cb.id.replace('payload-', ''));
+            });
+        }
+
+        function deselectAllPayloads() {
+            document.querySelectorAll('#payloads-list input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            selectedPayloads.clear();
         }
 
         function executeScan() {
@@ -553,7 +675,6 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    scanFindings = data.findings || [];
                     displayResults(data);
                 })
                 .catch(err => {
@@ -588,7 +709,6 @@
                     provider: provider,
                     credentials: credentials,
                     mode: 'redteam',
-                    findings: scanFindings,
                     confirm_exploitation: confirmed
                 })
             })
@@ -602,7 +722,6 @@
         }
 
         function displayResults(data) {
-            const resultsDiv = document.getElementById('results');
             const categories = data.categories || [];
             
             // Hide placeholder
@@ -610,7 +729,7 @@
 
             let html = `<h2>Scan Results - ${data.provider.toUpperCase()}</h2>`;
 
-            // Overall Metrics (llmguardt2 style)
+            // Overall Metrics
             html += `
                 <div class="risk-metrics">
                     <div class="metric">
@@ -640,28 +759,26 @@
                 </div>
             `;
 
-            // Category Breakdown
+            // Categories
             if (categories.length === 0) {
                 html += '<p style="color: #888; margin-top: 20px;">No categories found</p>';
             } else {
                 html += categories.map(cat => `
-                    <div style="margin-top: 30px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #00d9ff;">
-                        <div style="font-size: 1.1em; font-weight: bold; color: #00d9ff; margin-bottom: 10px;">
-                            ${cat.category_name}
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; font-size: 0.9em;">
+                    <div class="category-section">
+                        <div class="category-title">${cat.category_name}</div>
+                        <div class="category-stats">
                             <div><span style="color: #ff4444;">🔴 Vulnerable:</span> ${cat.count_vulnerable}</div>
                             <div><span style="color: #ffaa00;">🟡 Partial:</span> ${cat.count_partial}</div>
                             <div><span style="color: #44ff44;">🟢 Resistant:</span> ${cat.count_resistant}</div>
                             <div><span style="color: #00d9ff;">🔵 Review:</span> ${cat.count_review}</div>
                         </div>
-                        <div style="font-weight: bold; margin-bottom: 15px;">Compliance: <span style="color: #00d9ff;">${cat.compliance_percentage}%</span></div>
+                        <div class="category-compliance">Compliance: <span style="color: #00d9ff;">${cat.compliance_percentage}%</span></div>
                         
                         ${cat.findings.map(f => `
                             <div class="finding ${f.severity_original.toLowerCase()}">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div class="finding-header">
                                     <div class="finding-title">${f.check_name}</div>
-                                    <span style="padding: 4px 12px; border-radius: 3px; font-size: 0.85em; background: ${getStatusColor(f.status)}; color: white;">
+                                    <span class="status-badge" style="background: ${getStatusColor(f.status)};">
                                         ${f.status.toUpperCase()} (${f.confidence}%)
                                     </span>
                                 </div>
@@ -721,13 +838,15 @@
 
             // Exploit Results
             if (results.length === 0) {
-                html += '<p style="color: #888; margin-top: 20px;">No exploits executed (exploitation logic not yet implemented)</p>';
+                html += '<p style="color: #888; margin-top: 20px;">No exploits executed</p>';
             } else {
                 html += results.map(r => `
                     <div class="finding">
-                        <div class="finding-title">${r.exploit_id}</div>
+                        <div class="finding-header">
+                            <div class="finding-title">${r.exploit_id}</div>
+                            <span class="status-badge" style="background: #ff4444;">${r.status.toUpperCase()}</span>
+                        </div>
                         <div class="finding-detail"><strong>Target:</strong> ${r.target_resource}</div>
-                        <div class="finding-detail"><strong>Status:</strong> <span style="color: #ff4444;">${r.status.toUpperCase()}</span></div>
                         <div class="finding-detail"><strong>Impact:</strong> ${r.impact_level}</div>
                         <div class="finding-detail"><strong>Message:</strong> ${r.message}</div>
                     </div>
