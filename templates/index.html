@@ -139,6 +139,21 @@
         }
 
         textarea {
+            color: #e0e0e0;
+        }
+
+        textarea::placeholder {
+            color: #00d9ff !important;
+            opacity: 1 !important;
+        }
+
+        /* Firefox */
+        textarea::-moz-placeholder {
+            color: #00d9ff !important;
+            opacity: 1 !important;
+        }
+
+        textarea {
             min-height: 80px;
             resize: vertical;
         }
@@ -422,6 +437,14 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
+        }
+
+        /* Placeholder text styling */
+        textarea::placeholder {
+            color: #888;
+            opacity: 1;
+            font-size: 0.9em;
+            line-height: 1.4;
         }
 
         @media (max-width: 1200px) {
