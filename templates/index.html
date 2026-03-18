@@ -474,7 +474,7 @@
                     <form id="scan-form">
                         <div class="form-group">
                             <label>Cloud Provider</label>
-                            <select id="provider" onchange="updatePayloads()">
+                            <select id="provider" onchange="updatePayloads(); updateCredentialExample()">
                                 <option value="aws">AWS</option>
                                 <option value="azure">Azure</option>
                                 <option value="gcp">GCP</option>
@@ -482,15 +482,15 @@
                         </div>
                         <div class="form-group">
                             <label>Credentials (JSON)</label>
-                            <div style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #00d9ff;">
-                                <div style="color: #00d9ff; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
-                                <code style="color: #00d9ff; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
+                            <div id="credential-example-box" style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #00d9ff;">
+                                <div id="example-title" style="color: #00d9ff; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
+                                <code id="example-code" style="color: #00d9ff; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
 {"aws_access_key_id": "AKIA...",<br/>
 &nbsp;"aws_secret_access_key": "wJal...",<br/>
 &nbsp;"region_name": "us-east-1"}</code>
                                 <div style="color: #888; font-size: 0.85em;">Or use empty <code style="color: #00d9ff;">{}</code> for test</div>
                             </div>
-                            <textarea id="credentials" placeholder='Paste your AWS credentials here, or leave empty {} for test mode'>
+                            <textarea id="credentials" placeholder='Paste your cloud credentials here, or leave empty {} for test mode'>
                             </textarea>
                         </div>
                         <button type="button" onclick="executeScan()">▶ Start Scan</button>
@@ -506,7 +506,7 @@
                     <form id="redteam-form">
                         <div class="form-group">
                             <label>Cloud Provider</label>
-                            <select id="provider-rt">
+                            <select id="provider-rt" onchange="updateCredentialExampleRT()">
                                 <option value="aws">AWS</option>
                                 <option value="azure">Azure</option>
                                 <option value="gcp">GCP</option>
@@ -514,15 +514,15 @@
                         </div>
                         <div class="form-group">
                             <label>Credentials (JSON)</label>
-                            <div style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #ff4444;">
-                                <div style="color: #ff4444; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
-                                <code style="color: #ff4444; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
+                            <div id="credential-example-box-rt" style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #ff4444;">
+                                <div id="example-title-rt" style="color: #ff4444; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
+                                <code id="example-code-rt" style="color: #ff4444; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
 {"aws_access_key_id": "AKIA...",<br/>
 &nbsp;"aws_secret_access_key": "wJal...",<br/>
 &nbsp;"region_name": "us-east-1"}</code>
                                 <div style="color: #888; font-size: 0.85em;">Or use empty <code style="color: #ff4444;">{}</code> for test</div>
                             </div>
-                            <textarea id="credentials-rt" placeholder='Paste your AWS credentials here, or leave empty {} for test mode'>
+                            <textarea id="credentials-rt" placeholder='Paste your cloud credentials here, or leave empty {} for test mode'>
                             </textarea>
                         </div>
                         <div class="checkbox-group">
@@ -896,8 +896,69 @@
             document.getElementById('results-content').innerHTML = html;
         }
 
+        // Credential examples for each provider
+        const credentialExamples = {
+            aws: {
+                title: '📋 Example (AWS):',
+                color: '#00d9ff',
+                code: `{
+  "aws_access_key_id": "AKIA...",
+  "aws_secret_access_key": "wJal...",
+  "region_name": "us-east-1"
+}`
+            },
+            azure: {
+                title: '📋 Example (Azure):',
+                color: '#00d9ff',
+                code: `{
+  "subscription_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxx",
+  "tenant_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxx",
+  "client_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxx",
+  "client_secret": "your_secret"
+}`
+            },
+            gcp: {
+                title: '📋 Example (GCP):',
+                color: '#00d9ff',
+                code: `{
+  "type": "service_account",
+  "project_id": "my-gcp-project",
+  "private_key_id": "key-id",
+  "client_email": "service@project.iam.gserviceaccount.com"
+}`
+            }
+        };
+
+        function updateCredentialExample() {
+            const provider = document.getElementById('provider').value;
+            const example = credentialExamples[provider];
+            
+            if (example) {
+                document.getElementById('example-title').textContent = example.title;
+                document.getElementById('example-title').style.color = example.color;
+                document.getElementById('example-code').innerHTML = example.code.split('\n').join('<br/>').replace(/ /g, '&nbsp;');
+                document.getElementById('example-code').style.color = example.color;
+                document.getElementById('credential-example-box').style.borderLeftColor = example.color;
+            }
+        }
+
+        function updateCredentialExampleRT() {
+            const provider = document.getElementById('provider-rt').value;
+            const example = credentialExamples[provider];
+            
+            if (example) {
+                document.getElementById('example-title-rt').textContent = example.title;
+                document.getElementById('example-title-rt').style.color = '#ff4444';
+                document.getElementById('example-code-rt').innerHTML = example.code.split('\n').join('<br/>').replace(/ /g, '&nbsp;');
+                document.getElementById('example-code-rt').style.color = '#ff4444';
+                document.getElementById('credential-example-box-rt').style.borderLeftColor = '#ff4444';
+            }
+        }
+
         // Initialize
         updatePayloads();
+        updateCredentialExample();
+        updateCredentialExampleRT();
 
         // Enable/disable red-team button
         document.getElementById('confirm-exploitation').addEventListener('change', function() {
