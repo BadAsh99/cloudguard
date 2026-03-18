@@ -7,8 +7,19 @@ Mode Toggle: Scan (discover) vs Red-Team (exploit)
 from flask import Flask, render_template, request, jsonify
 from scanner import AWSScanner, AzureScanner, GCPScanner, CloudProvider
 from exploiter import AWSExploiter, AzureExploiter, GCPExploiter
+from result_model import (
+    EnhancedFinding,
+    CategoryResults,
+    ScanSummary,
+    FindingStatus,
+    map_severity_to_status,
+    calculate_confidence,
+    get_cis_category,
+    get_category_name,
+)
 import os
 from dotenv import load_dotenv
+from collections import defaultdict
 
 load_dotenv()
 
@@ -33,6 +44,103 @@ exploiters = {
 def index():
     """Serve UI with mode toggle"""
     return render_template("index.html")
+
+
+def transform_findings_to_summary(provider: str, findings: list) -> dict:
+    """
+    Transform raw scan findings into categorized summary (llmguardt2-style)
+    """
+    # Convert to enhanced findings with status + confidence
+    enhanced = []
+    for f in findings:
+        status = map_severity_to_status(f.severity, f.is_vulnerable)
+        confidence = calculate_confidence(f.severity, f.is_vulnerable)
+        category = get_cis_category(f.cis_control)
+        
+        enhanced.append(
+            EnhancedFinding(
+                check_id=f.check_id,
+                check_name=f.check_name,
+                resource=f.resource,
+                status=status,
+                confidence=confidence,
+                cis_control=f.cis_control,
+                cis_category=category,
+                severity_original=f.severity,
+                finding=f.finding,
+                remediation=f.remediation,
+                is_vulnerable=f.is_vulnerable,
+            )
+        )
+    
+    # Group by CIS category
+    by_category = defaultdict(list)
+    for finding in enhanced:
+        by_category[finding.cis_category].append(finding)
+    
+    # Build category results
+    category_results = []
+    vulnerable_total = 0
+    partial_total = 0
+    resistant_total = 0
+    review_total = 0
+    
+    for category in sorted(by_category.keys(), key=lambda x: x.value):
+        findings_in_cat = by_category[category]
+        resistant = len([f for f in findings_in_cat if f.status == FindingStatus.RESISTANT])
+        vulnerable = len([f for f in findings_in_cat if f.status == FindingStatus.VULNERABLE])
+        partial = len([f for f in findings_in_cat if f.status == FindingStatus.PARTIAL])
+        review = len([f for f in findings_in_cat if f.status == FindingStatus.REVIEW])
+        
+        compliance_pct = (resistant / len(findings_in_cat) * 100) if findings_in_cat else 100
+        
+        vulnerable_total += vulnerable
+        partial_total += partial
+        resistant_total += resistant
+        review_total += review
+        
+        category_results.append(
+            CategoryResults(
+                category=category,
+                category_name=get_category_name(category),
+                findings=findings_in_cat,
+                compliance_percentage=int(compliance_pct),
+                count_vulnerable=vulnerable,
+                count_partial=partial,
+                count_resistant=resistant,
+                count_review=review,
+            )
+        )
+    
+    # Calculate overall metrics
+    total = len(enhanced)
+    overall_compliance = (resistant_total / total * 100) if total > 0 else 100
+    overall_risk = 100 - overall_compliance
+    
+    # Count by severity
+    critical = len([f for f in enhanced if f.severity_original.lower() == "critical"])
+    high = len([f for f in enhanced if f.severity_original.lower() == "high"])
+    medium = len([f for f in enhanced if f.severity_original.lower() == "medium"])
+    low = len([f for f in enhanced if f.severity_original.lower() == "low"])
+    
+    summary = ScanSummary(
+        provider=provider,
+        scan_type="scan",
+        overall_compliance=int(overall_compliance),
+        overall_risk_score=int(overall_risk),
+        total_findings=total,
+        categories=category_results,
+        vulnerable_count=vulnerable_total,
+        partial_count=partial_total,
+        resistant_count=resistant_total,
+        review_count=review_total,
+        critical_issues=critical,
+        high_issues=high,
+        medium_issues=medium,
+        low_issues=low,
+    )
+    
+    return summary.model_dump()
 
 
 @app.route("/api/scan", methods=["POST"])
@@ -62,16 +170,11 @@ def scan():
 
     # Execute scan
     findings = scanner.scan(credentials)
-    risk_metrics = scanner.score_risk(findings)
+    
+    # Transform to llmguardt2-style summary
+    summary = transform_findings_to_summary(provider, findings)
 
-    return jsonify(
-        {
-            "provider": provider,
-            "mode": "scan",
-            "findings": [f.dict() for f in findings],
-            "risk_metrics": risk_metrics,
-        }
-    )
+    return jsonify(summary)
 
 
 @app.route("/api/redteam", methods=["POST"])

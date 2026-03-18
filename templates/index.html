@@ -533,49 +533,86 @@
 
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
-            const findings = data.findings || [];
-            const metrics = data.risk_metrics || {};
+            const categories = data.categories || [];
 
             let html = `<h2>Scan Results - ${data.provider.toUpperCase()}</h2>`;
 
-            // Risk Metrics
+            // Overall Metrics (llmguardt2 style)
             html += `
                 <div class="risk-metrics">
                     <div class="metric">
-                        <div class="metric-label">Compliance Score</div>
-                        <div class="metric-value">${metrics.compliance_percentage || 0}%</div>
+                        <div class="metric-label">Overall Compliance</div>
+                        <div class="metric-value">${data.overall_compliance || 0}%</div>
                     </div>
                     <div class="metric">
                         <div class="metric-label">Risk Score</div>
-                        <div class="metric-value">${metrics.risk_score || 0}</div>
+                        <div class="metric-value">${data.overall_risk_score || 0}</div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Critical Issues</div>
-                        <div class="metric-value">${metrics.critical_issues || 0}</div>
+                        <div class="metric-label">Vulnerable</div>
+                        <div class="metric-value" style="color: #ff4444;">${data.vulnerable_count || 0}</div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">High Issues</div>
-                        <div class="metric-value">${metrics.high_issues || 0}</div>
+                        <div class="metric-label">Resistant</div>
+                        <div class="metric-value" style="color: #44ff44;">${data.resistant_count || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Partial</div>
+                        <div class="metric-value" style="color: #ffaa00;">${data.partial_count || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Review</div>
+                        <div class="metric-value" style="color: #00d9ff;">${data.review_count || 0}</div>
                     </div>
                 </div>
             `;
 
-            // Findings
-            if (findings.length === 0) {
-                html += '<p style="color: #888; margin-top: 20px;">No findings (scan infrastructure not yet implemented)</p>';
+            // Category Breakdown
+            if (categories.length === 0) {
+                html += '<p style="color: #888; margin-top: 20px;">No categories found</p>';
             } else {
-                html += findings.map(f => `
-                    <div class="finding ${f.severity}">
-                        <div class="finding-title">${f.check_name}</div>
-                        <div class="finding-detail"><strong>Resource:</strong> ${f.resource}</div>
-                        <div class="finding-detail"><strong>Finding:</strong> ${f.finding}</div>
-                        <div class="finding-detail"><strong>Remediation:</strong> ${f.remediation}</div>
-                        <div class="finding-detail"><strong>Severity:</strong> <span style="color: #ff4444;">${f.severity.toUpperCase()}</span></div>
+                html += categories.map(cat => `
+                    <div style="margin-top: 30px; padding: 15px; background: #1e1e2e; border-radius: 8px; border-left: 4px solid #00d9ff;">
+                        <div style="font-size: 1.1em; font-weight: bold; color: #00d9ff; margin-bottom: 10px;">
+                            ${cat.category_name}
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; font-size: 0.9em;">
+                            <div><span style="color: #ff4444;">🔴 Vulnerable:</span> ${cat.count_vulnerable}</div>
+                            <div><span style="color: #ffaa00;">🟡 Partial:</span> ${cat.count_partial}</div>
+                            <div><span style="color: #44ff44;">🟢 Resistant:</span> ${cat.count_resistant}</div>
+                            <div><span style="color: #00d9ff;">🔵 Review:</span> ${cat.count_review}</div>
+                        </div>
+                        <div style="font-weight: bold; margin-bottom: 15px;">Compliance: <span style="color: #00d9ff;">${cat.compliance_percentage}%</span></div>
+                        
+                        ${cat.findings.map(f => `
+                            <div class="finding ${f.severity_original.toLowerCase()}">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div class="finding-title">${f.check_name}</div>
+                                    <span style="padding: 4px 12px; border-radius: 3px; font-size: 0.85em; background: ${getStatusColor(f.status)}; color: white;">
+                                        ${f.status.toUpperCase()} (${f.confidence}%)
+                                    </span>
+                                </div>
+                                <div class="finding-detail"><strong>Resource:</strong> ${f.resource}</div>
+                                <div class="finding-detail"><strong>Finding:</strong> ${f.finding}</div>
+                                <div class="finding-detail"><strong>Remediation:</strong> ${f.remediation}</div>
+                                <div class="finding-detail"><strong>CIS Control:</strong> ${f.cis_control}</div>
+                            </div>
+                        `).join('')}
                     </div>
                 `).join('');
             }
 
             resultsDiv.innerHTML = html;
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'vulnerable': '#ff4444',
+                'partial': '#ffaa00',
+                'resistant': '#44ff44',
+                'review': '#00d9ff'
+            };
+            return colors[status] || '#888';
         }
 
         function displayRedTeamResults(data) {
