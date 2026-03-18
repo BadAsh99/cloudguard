@@ -88,11 +88,47 @@ class AWSScanner(Scanner):
             Payload(
                 payload_id="aws_s3_public_001",
                 name="S3 Bucket Public Access",
-                description="Check if S3 bucket allows public read/write",
+                description="Check if S3 bucket allows public read/write via ACL or policy",
                 category="Storage",
                 cis_control="2.1.5",
                 provider=CloudProvider.AWS,
                 check_func="check_s3_public_acl",
+            ),
+            Payload(
+                payload_id="aws_s3_encrypt_001",
+                name="S3 Bucket Encryption Status",
+                description="Verify default encryption enabled (SSE-S3 or SSE-KMS)",
+                category="Storage",
+                cis_control="2.1.3",
+                provider=CloudProvider.AWS,
+                check_func="check_s3_encryption",
+            ),
+            Payload(
+                payload_id="aws_s3_bpa_001",
+                name="S3 Block Public Access",
+                description="Check if Block Public Access is fully enabled",
+                category="Storage",
+                cis_control="2.1.5",
+                provider=CloudProvider.AWS,
+                check_func="check_s3_block_public_access",
+            ),
+            Payload(
+                payload_id="aws_s3_version_001",
+                name="S3 Bucket Versioning",
+                description="Detect if versioning is enabled (defense against deletion)",
+                category="Storage",
+                cis_control="2.1.4",
+                provider=CloudProvider.AWS,
+                check_func="check_s3_versioning",
+            ),
+            Payload(
+                payload_id="aws_s3_logging_001",
+                name="S3 Access Logging",
+                description="Verify S3 access logging is configured",
+                category="Logging",
+                cis_control="2.1.5",
+                provider=CloudProvider.AWS,
+                check_func="check_s3_logging",
             ),
             Payload(
                 payload_id="aws_iam_overperm_001",
@@ -124,9 +160,12 @@ class AWSScanner(Scanner):
         ]
 
     def scan(self, credentials: Dict[str, Any]) -> List[ScanFinding]:
-        """Placeholder: Will implement boto3 integration"""
-        print("[AWSScanner] Scan mode: read-only checks (no credentials used yet)")
-        return []
+        """Execute AWS S3 scan"""
+        from aws_s3 import S3Scanner
+        
+        s3_scanner = S3Scanner(credentials)
+        findings = s3_scanner.scan()
+        return findings
 
 
 class AzureScanner(Scanner):
