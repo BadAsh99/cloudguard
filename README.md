@@ -1,90 +1,153 @@
-# CloudGuard - Cloud Red-Teaming & Compliance Scanner
+# CloudGuard
 
-A cloud security red-teaming framework for discovering and exploiting cloud misconfigurations. Models attack patterns like LLMGuard, with payloads targeting CIS Benchmarks, OWASP Cloud Top 10, and NIST CSF.
+> Multi-cloud red-teaming and misconfiguration scanner for AWS, Azure, and GCP
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-black?logo=flask)
+![AWS](https://img.shields.io/badge/AWS-boto3-orange?logo=amazonaws)
+![Azure](https://img.shields.io/badge/Azure-SDK-blue?logo=microsoftazure)
+![GCP](https://img.shields.io/badge/GCP-SDK-red?logo=googlecloud)
+
+---
+
+## Overview
+
+CloudGuard is a cloud security red-teaming framework that discovers and validates misconfigurations across AWS, Azure, and GCP in a single tool. It operates in two modes:
+
+- **Scan Mode** — read-only passive discovery of misconfigurations
+- **Red-Team Mode** — active exploitation simulation with multi-step attack chain building
+
+Findings are mapped to **CIS Benchmarks**, **OWASP Cloud Top 10**, and **NIST CSF** with severity scoring so remediation can be prioritized immediately.
+
+---
 
 ## Architecture
 
-**Mode Toggle:**
-- **Scan Mode** (Discovery): Read-only enumeration of cloud misconfigurations. Safe, no resource modification.
-- **Red-Team Mode** (Exploitation): Active exploitation of discovered issues. Shows real attack chains and impact.
+```
+┌──────────────────────────────────────┐
+│       Flask Web Dashboard / API      │
+│  /api/scan   /api/redteam   /api/payloads │
+└────────────────┬─────────────────────┘
+                 │
+      ┌──────────▼──────────┐
+      │    Payload Library   │
+      │  (provider-specific) │
+      └──┬──────────┬──────┬─┘
+         │          │      │
+     ┌───▼─┐   ┌───▼─┐ ┌──▼──┐
+     │ AWS │   │Azure│ │ GCP │
+     │Scan │   │Scan │ │Scan │
+     └───┬─┘   └───┬─┘ └──┬──┘
+         │          │      │
+     ┌───▼───┐  ┌───▼──┐ ┌─▼────┐
+     │  AWS  │  │Azure │ │ GCP  │
+     │Exploit│  │Exploit│ │Exploit│
+     └───────┘  └──────┘ └──────┘
+                 │
+      ┌──────────▼──────────┐
+      │  Attack Chain Builder│
+      │  Risk Score / CIS Map│
+      └─────────────────────┘
+```
 
-**Coverage (Tier 0):**
-- AWS: S3 exposure, IAM over-permission, Security Group misconfiguration, CloudTrail gaps
-- Azure: Storage Account public access, RBAC over-permission, Network Security Group misconfiguration
-- GCP: Cloud Storage public ACLs, IAM binding over-permission, Audit logging gaps
+---
 
-**Detection Patterns:**
-- Payload library (like LLMGuard)
-- Behavioral analysis (expected vs. actual cloud behavior)
-- Multi-turn attack chains (misconfiguration A + B = full breach)
-- Risk scoring aligned to CIS Benchmarks
+## Cloud Coverage
 
-## Setup
+| Provider | Checks |
+|----------|--------|
+| **AWS** | S3 bucket public exposure, IAM over-permissioning, Security Group misconfiguration, CloudTrail logging gaps |
+| **Azure** | Storage Account public access, RBAC excessive permissions, NSG rule weaknesses |
+| **GCP** | Cloud Storage public ACLs, IAM binding misconfigurations, audit logging gaps |
+
+---
+
+## Features
+
+- Dual-mode operation — safe passive discovery or active red-teaming
+- Extensible payload library with provider-specific attack patterns
+- Multi-turn attack chains — simulate how misconfigurations chain into full breaches
+- CIS Benchmark severity scoring for immediate remediation prioritization
+- REST API for integration into existing security pipelines or CI/CD
+- Web dashboard for mode selection, provider targeting, and result visualization
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python 3.11, Flask 3.0 |
+| AWS | boto3 |
+| Azure | azure-identity, azure-storage-blob |
+| GCP | google-cloud-iam, google-cloud-storage |
+| Data modeling | Pydantic 2.5 |
+| Config | python-dotenv |
+
+---
+
+## Getting Started
 
 ```bash
-cd /home/parallels/Code/my-dev-environments/cloudguard
-python3 -m venv venv
-source venv/bin/activate
+git clone https://github.com/BadAsh99/cloudguard.git
+cd cloudguard
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env   # add your cloud credentials
+python app.py
+# Open http://localhost:5000
 ```
 
-## Run
+### API Reference
 
 ```bash
-python app.py
+# Passive misconfiguration scan
+curl -X POST http://localhost:5000/api/scan \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "aws", "mode": "scan"}'
+
+# Active red-team exploitation
+curl -X POST http://localhost:5000/api/redteam \
+  -H "Content-Type: application/json" \
+  -d '{"provider": "aws", "mode": "redteam", "confirm_exploitation": true}'
+
+# List available payloads for a provider
+curl http://localhost:5000/api/payloads/aws
 ```
 
-Visit: `http://localhost:5000`
+---
 
-## API
+## Environment Variables
 
-### POST `/api/scan`
-Discover misconfiguration (read-only)
-```json
-{
-  "provider": "aws|azure|gcp",
-  "credentials": {...},
-  "mode": "scan"
-}
+```env
+# AWS
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=
+
+# Azure
+AZURE_SUBSCRIPTION_ID=
+AZURE_TENANT_ID=
+AZURE_CLIENT_ID=
+AZURE_CLIENT_SECRET=
+
+# GCP
+GCP_PROJECT_ID=
+GOOGLE_APPLICATION_CREDENTIALS=
 ```
 
-### POST `/api/redteam`
-Execute exploitation (active)
-```json
-{
-  "provider": "aws|azure|gcp",
-  "credentials": {...},
-  "mode": "redteam",
-  "findings": [...],
-  "confirm_exploitation": true
-}
-```
+---
 
-### GET `/api/payloads/<provider>`
-List available payloads for a provider
+## Use Cases
 
-## Phase 1: Scaffold ✅
+- Pre-audit posture validation across multi-cloud environments
+- Red team exercises to simulate realistic cloud attack paths
+- Compliance gap analysis mapped to CIS, NIST, and OWASP frameworks
+- Security awareness training using real misconfiguration patterns
 
-- [x] Flask skeleton
-- [x] Mode toggle (Scan/Red-Team UI)
-- [x] Payload framework (scanner.py)
-- [x] Exploitation framework (exploiter.py)
-- [x] API endpoints (app.py)
-- [x] Dashboard UI (index.html)
-- [x] Environment config (.env)
+---
 
-## Phase 2: Tier 0 Implementation (Next)
+## Author
 
-- [ ] AWS boto3 integration (S3, IAM, SG, CloudTrail)
-- [ ] Azure SDK integration (Storage, RBAC, NSG)
-- [ ] GCP integration (Cloud Storage, IAM, Audit Logs)
-- [ ] Actual exploitation logic (not just stubs)
-- [ ] Multi-turn attack chain builder
-- [ ] CIS Benchmark scoring
-
-## Phase 3: Tier 1+ (Future)
-
-- [ ] Kubernetes/container scanning
-- [ ] IAM privilege escalation mapping
-- [ ] CI/CD pipeline validation
-- [ ] Behavioral detection (semantic matching)
+**Ash Clements** — Sr. Principal Security Consultant | Cloud & AI Security
+[github.com/BadAsh99](https://github.com/BadAsh99)
