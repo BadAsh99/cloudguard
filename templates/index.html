@@ -441,6 +441,40 @@
             font-size: 0.9em;
         }
 
+        /* Remediation blocks */
+        .remediation-block {
+            position: relative;
+            background: #0d0d14;
+            border-radius: 4px;
+            padding: 8px 36px 8px 10px;
+            margin-top: 4px;
+            border-left: 3px solid #444;
+            overflow-x: auto;
+        }
+        .remediation-block.cli-block { border-left-color: #00d9ff; }
+        .remediation-block.tf-block  { border-left-color: #a78bfa; }
+        .remediation-block code,
+        .remediation-block pre {
+            font-family: 'Courier New', monospace;
+            font-size: 0.82em;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            background: none;
+            padding: 0;
+        }
+        .rem-copy {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            cursor: pointer;
+            color: #666;
+            font-size: 1em;
+            user-select: none;
+            transition: color 0.15s;
+        }
+        .rem-copy:hover { color: #00d9ff; }
+
         @media (max-width: 1200px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -449,19 +483,47 @@
                 max-height: none;
             }
         }
+        .export-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 12px 14px;
+            background: #13131f;
+            border-radius: 6px;
+            border: 1px solid #2a2a3e;
+        }
+        .export-btn {
+            padding: 6px 16px;
+            font-size: 0.85em;
+            background: #2a2a3e;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .export-btn:hover { background: #3a3a50; }
+        .export-pdf {
+            background: #1a3a5c;
+            border-color: #00d9ff;
+            color: #00d9ff;
+            font-weight: 600;
+        }
+        .export-pdf:hover { background: #244a6e; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>☁️ CloudGuard</h1>
+            <h1>// CloudGuard</h1>
             <p class="subtitle">Cloud Red-Teaming & Compliance Scanner</p>
         </header>
 
         <!-- Mode Toggle -->
         <div class="mode-toggle">
-            <button class="mode-btn scan active" onclick="setMode('scan')">🔍 Scan Mode</button>
-            <button class="mode-btn redteam" onclick="setMode('redteam')">⚔️ Red-Team Mode</button>
+            <button class="mode-btn scan active" onclick="setMode('scan')">[ SCAN ]</button>
+            <button class="mode-btn redteam" onclick="setMode('redteam')">[ RED-TEAM ]</button>
         </div>
 
         <!-- Main Grid: Left (Config + Payloads) + Right (Results) -->
@@ -470,7 +532,7 @@
             <div class="left-column">
                 <!-- Scan Configuration -->
                 <div id="scan-panel" class="panel">
-                    <h2>🔍 Scan Configuration</h2>
+                    <h2>Scan Configuration</h2>
                     <form id="scan-form">
                         <div class="form-group">
                             <label>Cloud Provider</label>
@@ -483,25 +545,24 @@
                         <div class="form-group">
                             <label>Credentials (JSON)</label>
                             <div id="credential-example-box" style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #00d9ff;">
-                                <div id="example-title" style="color: #00d9ff; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
+                                <div id="example-title" style="color: #00d9ff; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">Example (AWS):</div>
                                 <code id="example-code" style="color: #00d9ff; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
 {"aws_access_key_id": "AKIA...",<br/>
 &nbsp;"aws_secret_access_key": "wJal...",<br/>
 &nbsp;"region_name": "us-east-1"}</code>
                                 <div style="color: #888; font-size: 0.85em;">Or use empty <code style="color: #00d9ff;">{}</code> for test</div>
                             </div>
-                            <textarea id="credentials" placeholder='Paste your cloud credentials here, or leave empty {} for test mode'>
-                            </textarea>
+                            <textarea id="credentials" placeholder='Enter credentials JSON here, e.g. {"subscription_id":"..."}' style="border: 2px solid #00d9ff; background: #13131f; color: #e0e0e0; min-height: 70px;"></textarea>
                         </div>
-                        <button type="button" onclick="executeScan()">▶ Start Scan</button>
+                        <button type="button" id="scan-btn" onclick="toggleScan()">Run Scan →</button>
                     </form>
                 </div>
 
                 <!-- Red-Team Configuration (hidden by default) -->
                 <div id="redteam-panel" class="panel redteam" style="display: none;">
-                    <h2>⚔️ Red-Team Configuration</h2>
+                    <h2>Red-Team Configuration</h2>
                     <div class="warning">
-                        ⚠️ <strong>Warning:</strong> Red-Team mode will execute <strong>active exploitation</strong>.
+                        <strong>! WARNING:</strong> Red-Team mode will execute <strong>active exploitation</strong>.
                     </div>
                     <form id="redteam-form">
                         <div class="form-group">
@@ -515,7 +576,7 @@
                         <div class="form-group">
                             <label>Credentials (JSON)</label>
                             <div id="credential-example-box-rt" style="background: #1a1a28; padding: 12px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #ff4444;">
-                                <div id="example-title-rt" style="color: #ff4444; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">📋 Example (AWS):</div>
+                                <div id="example-title-rt" style="color: #ff4444; font-weight: bold; margin-bottom: 8px; font-size: 0.9em;">Example (AWS):</div>
                                 <code id="example-code-rt" style="color: #ff4444; display: block; background: #0d0d14; padding: 8px; border-radius: 3px; overflow-x: auto; font-size: 0.85em; margin-bottom: 6px; line-height: 1.4;">
 {"aws_access_key_id": "AKIA...",<br/>
 &nbsp;"aws_secret_access_key": "wJal...",<br/>
@@ -537,10 +598,10 @@
 
                 <!-- Payload Selector -->
                 <div class="panel">
-                    <h2>📋 Select Payloads</h2>
+                    <h2>Checks to Run</h2>
+                    <p style="font-size:0.8em;color:#888;margin-bottom:10px">Select which CIS security checks to include in the scan. Deselected checks are skipped and won't appear in results.</p>
                     <div class="payload-control">
-                        <button class="secondary" onclick="selectAllPayloads()">Select All</button>
-                        <button class="secondary" onclick="deselectAllPayloads()">Deselect All</button>
+                        <button class="secondary" id="toggle-all-btn" onclick="toggleAllPayloads()">Deselect All</button>
                     </div>
                     <div class="payload-selector" id="payloads-list"></div>
                 </div>
@@ -653,10 +714,11 @@
         function renderPayloadSelector(provider) {
             const payloads = allPayloads[provider] || [];
             const list = document.getElementById('payloads-list');
-            
+            selectedPayloads.clear();
+
             list.innerHTML = payloads.map(p => `
                 <div class="payload-item">
-                    <input type="checkbox" id="payload-${p.payload_id}" 
+                    <input type="checkbox" id="payload-${p.payload_id}" checked
                            onchange="togglePayload('${p.payload_id}', this.checked)"
                            data-provider="${provider}">
                     <div class="payload-info">
@@ -666,6 +728,12 @@
                     </div>
                 </div>
             `).join('');
+
+            // Add all to selectedPayloads since all are checked by default
+            payloads.forEach(p => selectedPayloads.add(p.payload_id));
+            allSelected = true;
+            const btn = document.getElementById('toggle-all-btn');
+            if (btn) btn.textContent = 'Deselect All';
         }
 
         function togglePayload(payloadId, checked) {
@@ -676,33 +744,66 @@
             }
         }
 
-        function selectAllPayloads() {
+        let allSelected = true;
+        function toggleAllPayloads() {
+            const btn = document.getElementById('toggle-all-btn');
+            allSelected = !allSelected;
             document.querySelectorAll('#payloads-list input[type="checkbox"]').forEach(cb => {
-                cb.checked = true;
-                selectedPayloads.add(cb.id.replace('payload-', ''));
+                cb.checked = allSelected;
+                const id = cb.id.replace('payload-', '');
+                allSelected ? selectedPayloads.add(id) : selectedPayloads.delete(id);
             });
+            btn.textContent = allSelected ? 'Deselect All' : 'Select All';
         }
 
-        function deselectAllPayloads() {
-            document.querySelectorAll('#payloads-list input[type="checkbox"]').forEach(cb => {
-                cb.checked = false;
-            });
-            selectedPayloads.clear();
+        let _scanAbortController = null;
+
+        function toggleScan() {
+            if (_scanAbortController) {
+                stopScan();
+            } else {
+                executeScan();
+            }
+        }
+
+        function stopScan() {
+            if (_scanAbortController) {
+                _scanAbortController.abort();
+                _scanAbortController = null;
+            }
+            fetch('/api/scan/cancel', { method: 'POST' });
+            resetScanBtn();
+            document.getElementById('results-content').innerHTML = '<div style="color:#ffaa00;">Scan stopped — partial results may be shown below.</div>';
+        }
+
+        function resetScanBtn() {
+            const btn = document.getElementById('scan-btn');
+            btn.textContent = 'Run Scan →';
+            btn.style.background = '';
         }
 
         function executeScan() {
             const provider = document.getElementById('provider').value;
             const credentialsStr = document.getElementById('credentials').value;
-            
+
             let credentials = {};
+            const trimmed = credentialsStr.trim();
             try {
-                credentials = credentialsStr ? JSON.parse(credentialsStr) : {};
+                credentials = trimmed ? JSON.parse(trimmed) : {};
             } catch (e) {
                 alert('Invalid JSON in credentials field');
                 return;
             }
 
+            const btn = document.getElementById('scan-btn');
+            btn.textContent = 'Stop Scan';
+            btn.style.background = '#8b0000';
+
             document.getElementById('results-content').innerHTML = '<div class="loading"><div class="spinner"></div> Running scan...</div>';
+
+            const selected = allSelected ? null : Array.from(selectedPayloads);
+
+            _scanAbortController = new AbortController();
 
             fetch('/api/scan', {
                 method: 'POST',
@@ -710,15 +811,40 @@
                 body: JSON.stringify({
                     provider: provider,
                     credentials: credentials,
-                    mode: 'scan'
-                })
+                    mode: 'scan',
+                    selected_checks: selected,
+                }),
+                signal: _scanAbortController.signal,
             })
                 .then(res => res.json())
                 .then(data => {
-                    displayResults(data);
+                    _scanAbortController = null;
+                    resetScanBtn();
+                    try {
+                        displayResults(data);
+                        if (data.cancelled) {
+                            const banner = document.createElement('div');
+                            banner.style.cssText = 'color:#ffaa00;margin-bottom:12px;';
+                            banner.textContent = 'Scan was stopped — results below are partial.';
+                            document.getElementById('results-content').prepend(banner);
+                        }
+                    } catch(err) {
+                        console.error('displayResults error', err);
+                        const e = document.createElement('div');
+                        e.style.color = '#ff4444';
+                        e.textContent = 'Display error: ' + err.message;
+                        document.getElementById('results-content').replaceChildren(e);
+                    }
                 })
                 .catch(err => {
-                    document.getElementById('results-content').innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
+                    _scanAbortController = null;
+                    resetScanBtn();
+                    if (err.name !== 'AbortError') {
+                        const e = document.createElement('div');
+                        e.style.color = '#ff4444';
+                        e.textContent = 'Fetch error: ' + err.message;
+                        document.getElementById('results-content').replaceChildren(e);
+                    }
                 });
         }
 
@@ -733,8 +859,9 @@
             }
 
             let credentials = {};
+            const trimmedRt = credentialsStr.trim();
             try {
-                credentials = credentialsStr ? JSON.parse(credentialsStr) : {};
+                credentials = trimmedRt ? JSON.parse(trimmedRt) : {};
             } catch (e) {
                 alert('Invalid JSON in credentials field');
                 return;
@@ -757,17 +884,26 @@
                     displayRedTeamResults(data);
                 })
                 .catch(err => {
-                    document.getElementById('results-content').innerHTML = `<div style="color: #ff4444;">Error: ${err.message}</div>`;
+                    const e = document.createElement('div');
+                    e.style.color = '#ff4444';
+                    e.textContent = 'Error: ' + err.message;
+                    document.getElementById('results-content').replaceChildren(e);
                 });
         }
 
         function displayResults(data) {
-            const categories = data.categories || [];
-            
-            // Hide placeholder
-            document.getElementById('placeholder-display').style.display = 'none';
+            let categories = data.categories || [];
 
-            let html = `<h2>Scan Results - ${data.provider.toUpperCase()}</h2>`;
+
+            const provider = (data.provider || 'unknown').toUpperCase();
+            const subId = data.subscription_id ? `<span style="font-family:monospace;font-size:0.85em;color:#888"> · ${esc(data.subscription_id)}</span>` : '';
+            let html = `
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:10px 14px;background:#1a1a28;border-radius:6px;border-left:3px solid #00d9ff;">
+                    <span style="font-size:1.1em;font-weight:700;color:#00d9ff">${esc(provider)}</span>
+                    ${subId}
+                    <span style="margin-left:auto;font-size:0.8em;color:#888">${Number(data.total_findings||0)} checks · ${new Date().toLocaleTimeString()}</span>
+                </div>
+                <h2 style="margin-bottom:16px">Scan Results — ${esc(provider)}</h2>`;
 
             // Overall Metrics
             html += `
@@ -815,24 +951,69 @@
                         <div class="category-compliance">Compliance: <span style="color: #00d9ff;">${cat.compliance_percentage}%</span></div>
                         
                         ${cat.findings.map(f => `
-                            <div class="finding ${f.severity_original.toLowerCase()}">
+                            <div class="finding ${esc(f.severity_original.toLowerCase())}">
                                 <div class="finding-header">
-                                    <div class="finding-title">${f.check_name}</div>
+                                    <div class="finding-title">${esc(f.check_name)}</div>
                                     <span class="status-badge" style="background: ${getStatusColor(f.status)};">
-                                        ${f.status.toUpperCase()} (${f.confidence}%)
+                                        ${esc(f.status).toUpperCase()} (${Number(f.confidence||0)}%)
                                     </span>
                                 </div>
-                                <div class="finding-detail"><strong>Resource:</strong> ${f.resource}</div>
-                                <div class="finding-detail"><strong>Finding:</strong> ${f.finding}</div>
-                                <div class="finding-detail"><strong>Remediation:</strong> ${f.remediation}</div>
-                                <div class="finding-detail"><strong>CIS Control:</strong> ${f.cis_control}</div>
+                                <div class="finding-detail"><strong>Resource:</strong> ${esc(f.resource)}</div>
+                                <div class="finding-detail"><strong>Finding:</strong> ${esc(f.finding)}</div>
+                                <div class="finding-detail"><strong>CIS Control:</strong> ${esc(f.cis_control)}</div>
+                                ${f.remediation_cli ? `
+                                <div class="finding-detail" style="margin-top:8px">
+                                  <strong style="color:#00d9ff">CLI Fix:</strong>
+                                  <div class="remediation-block cli-block">
+                                    <span class="rem-copy" onclick="copyToClipboard(this)" title="Copy">⧉</span>
+                                    <code>${esc(f.remediation_cli)}</code>
+                                  </div>
+                                </div>` : ''}
+                                ${f.remediation_tf ? `
+                                <div class="finding-detail" style="margin-top:6px">
+                                  <strong style="color:#a78bfa">Terraform Fix:</strong>
+                                  <div class="remediation-block tf-block">
+                                    <span class="rem-copy" onclick="copyToClipboard(this)" title="Copy">⧉</span>
+                                    <code><pre>${esc(f.remediation_tf)}</pre></code>
+                                  </div>
+                                </div>` : ''}
                             </div>
                         `).join('')}
                     </div>
                 `).join('');
             }
 
-            document.getElementById('results-content').innerHTML = html;
+            // Export bar
+            html += `
+                <div class="export-bar">
+                    <span style="font-size:0.85em;color:#888;">Export:</span>
+                    <button class="export-btn" onclick="exportJSON()">JSON</button>
+                    <button class="export-btn" onclick="exportCSV()">CSV</button>
+                    <button class="export-btn export-pdf" onclick="exportPDF()">PDF Report</button>
+                </div>
+            `;
+
+            // Stash data for exports
+            window._lastScanData = data;
+
+            try {
+                document.getElementById('results-content').innerHTML = html;
+            } catch(err) {
+                console.error('render error', err);
+                const e = document.createElement('div');
+                e.style.color = '#ff4444';
+                e.textContent = 'Render error: ' + err.message;
+                document.getElementById('results-content').replaceChildren(e);
+            }
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;');
         }
 
         function getStatusColor(status) {
@@ -848,11 +1029,8 @@
         function displayRedTeamResults(data) {
             const results = data.exploit_results || [];
             const impact = data.impact_simulation || {};
-            
-            // Hide placeholder
-            document.getElementById('placeholder-display').style.display = 'none';
 
-            let html = `<h2>Red-Team Results - ${data.provider.toUpperCase()}</h2>`;
+            let html = `<h2>Red-Team Results - ${esc(data.provider).toUpperCase()}</h2>`;
 
             // Impact Simulation
             html += `
@@ -883,12 +1061,12 @@
                 html += results.map(r => `
                     <div class="finding">
                         <div class="finding-header">
-                            <div class="finding-title">${r.exploit_id}</div>
-                            <span class="status-badge" style="background: #ff4444;">${r.status.toUpperCase()}</span>
+                            <div class="finding-title">${esc(r.exploit_id)}</div>
+                            <span class="status-badge" style="background: #ff4444;">${esc(r.status).toUpperCase()}</span>
                         </div>
-                        <div class="finding-detail"><strong>Target:</strong> ${r.target_resource}</div>
-                        <div class="finding-detail"><strong>Impact:</strong> ${r.impact_level}</div>
-                        <div class="finding-detail"><strong>Message:</strong> ${r.message}</div>
+                        <div class="finding-detail"><strong>Target:</strong> ${esc(r.target_resource)}</div>
+                        <div class="finding-detail"><strong>Impact:</strong> ${esc(r.impact_level)}</div>
+                        <div class="finding-detail"><strong>Message:</strong> ${esc(r.message)}</div>
                     </div>
                 `).join('');
             }
@@ -899,7 +1077,7 @@
         // Credential examples for each provider
         const credentialExamples = {
             aws: {
-                title: '📋 Example (AWS):',
+                title: 'Example (AWS):',
                 color: '#00d9ff',
                 code: `{
   "aws_access_key_id": "AKIA...",
@@ -908,17 +1086,12 @@
 }`
             },
             azure: {
-                title: '📋 Example (Azure):',
-                color: '#00d9ff',
-                code: `{
-  "subscription_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxx",
-  "tenant_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxx",
-  "client_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxx",
-  "client_secret": "your_secret"
-}`
+                title: '✅ Azure — uses az login session automatically',
+                color: '#3fb950',
+                code: `{}  // No credentials needed`
             },
             gcp: {
-                title: '📋 Example (GCP):',
+                title: 'Example (GCP):',
                 color: '#00d9ff',
                 code: `{
   "type": "service_account",
@@ -932,13 +1105,26 @@
         function updateCredentialExample() {
             const provider = document.getElementById('provider').value;
             const example = credentialExamples[provider];
-            
+            const textarea = document.getElementById('credentials');
+
             if (example) {
                 document.getElementById('example-title').textContent = example.title;
                 document.getElementById('example-title').style.color = example.color;
                 document.getElementById('example-code').innerHTML = example.code.split('\n').join('<br/>').replace(/ /g, '&nbsp;');
                 document.getElementById('example-code').style.color = example.color;
                 document.getElementById('credential-example-box').style.borderLeftColor = example.color;
+            }
+
+            if (provider === 'azure') {
+                textarea.value = '{}';
+                textarea.readOnly = true;
+                textarea.style.opacity = '0.4';
+                textarea.style.cursor = 'not-allowed';
+            } else {
+                textarea.value = '';
+                textarea.readOnly = false;
+                textarea.style.opacity = '1';
+                textarea.style.cursor = 'text';
             }
         }
 
@@ -953,6 +1139,81 @@
                 document.getElementById('example-code-rt').style.color = '#ff4444';
                 document.getElementById('credential-example-box-rt').style.borderLeftColor = '#ff4444';
             }
+        }
+
+        function copyToClipboard(el) {
+            const code = el.parentElement.querySelector('code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                el.textContent = '✓';
+                setTimeout(() => el.textContent = '⧉', 1500);
+            });
+        }
+
+        // ── Export functions ────────────────────────────────────
+        function _download(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportJSON() {
+            if (!window._lastScanData) return;
+            const blob = new Blob([JSON.stringify(window._lastScanData, null, 2)], { type: 'application/json' });
+            const provider = (window._lastScanData.provider || 'cloud').toLowerCase();
+            _download(blob, `cloudguard_${provider}_${_ts()}.json`);
+        }
+
+        function exportCSV() {
+            if (!window._lastScanData) return;
+            const rows = [['Check ID','Check Name','Category','Status','Severity','Confidence','Resource','CIS Control','Finding','Remediation','CLI Fix','Terraform Fix']];
+            for (const cat of (window._lastScanData.categories || [])) {
+                for (const f of (cat.findings || [])) {
+                    rows.push([
+                        f.check_id, f.check_name, cat.category_name,
+                        f.status, f.severity_original, f.confidence,
+                        f.resource, f.cis_control,
+                        f.finding, f.remediation || '',
+                        f.remediation_cli || '', f.remediation_tf || '',
+                    ].map(v => `"${String(v).replace(/"/g, '""')}"`));
+                }
+            }
+            const csv = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const provider = (window._lastScanData.provider || 'cloud').toLowerCase();
+            _download(blob, `cloudguard_${provider}_${_ts()}.csv`);
+        }
+
+        function exportPDF() {
+            if (!window._lastScanData) return;
+            const btn = document.querySelector('.export-pdf');
+            btn.textContent = 'Generating...';
+            btn.disabled = true;
+
+            fetch('/api/export/pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(window._lastScanData),
+            })
+                .then(res => res.blob())
+                .then(blob => {
+                    const provider = (window._lastScanData.provider || 'cloud').toLowerCase();
+                    _download(blob, `cloudguard_${provider}_${_ts()}.pdf`);
+                    btn.textContent = 'PDF Report';
+                    btn.disabled = false;
+                })
+                .catch(err => {
+                    alert('PDF export failed: ' + err.message);
+                    btn.textContent = 'PDF Report';
+                    btn.disabled = false;
+                });
+        }
+
+        function _ts() {
+            const d = new Date();
+            return d.toISOString().slice(0,10).replace(/-/g,'') + '_' + d.toTimeString().slice(0,5).replace(':','');
         }
 
         // Initialize

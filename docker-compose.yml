@@ -1,0 +1,18 @@
+services:
+  cloudguard:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      # Option A: Service Principal (recommended — no az login needed)
+      # Uncomment and fill in, or set in a .env file
+      # AZURE_TENANT_ID: ""
+      # AZURE_CLIENT_ID: ""
+      # AZURE_CLIENT_SECRET: ""
+
+      # Option B: Mount your local az login session (see volumes below)
+      # No env vars needed — DefaultAzureCredential picks up the mounted session
+    volumes:
+      # Option B: Mount local az login session (comment out if using SP credentials)
+      - ~/.azure:/root/.azure:ro
+    restart: unless-stopped

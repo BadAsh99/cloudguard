@@ -4,7 +4,7 @@ CloudGuard - Flask Backend
 Mode Toggle: Scan (discover) vs Red-Team (exploit)
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from scanner import AWSScanner, AzureScanner, GCPScanner, CloudProvider
 from exploiter import AWSExploiter, AzureExploiter, GCPExploiter
 from result_model import (
@@ -18,12 +18,16 @@ from result_model import (
     get_category_name,
 )
 import os
+import threading
 from dotenv import load_dotenv
 from collections import defaultdict
 
 load_dotenv()
 
 app = Flask(__name__)
+
+# Global cancellation flag — one scan at a time from the UI
+_cancel_scan = threading.Event()
 
 # Initialize scanners
 scanners = {
@@ -77,6 +81,8 @@ def transform_findings_to_summary(provider: str, findings: list) -> dict:
                 severity_original=f.severity,
                 finding=f.finding,
                 remediation=f.remediation,
+                remediation_cli=f.remediation_cli,
+                remediation_tf=f.remediation_tf,
                 is_vulnerable=f.is_vulnerable,
             )
         )
@@ -175,14 +181,27 @@ def scan():
 
     scanner = scanners[provider]
     credentials = data.get("credentials", {})
+    selected_checks = data.get("selected_checks", None)  # None = run all
+
+    # Reset cancel flag before starting
+    _cancel_scan.clear()
 
     # Execute scan
-    findings = scanner.scan(credentials)
-    
+    findings = scanner.scan(credentials, selected_checks, _cancel_scan)
+    cancelled = _cancel_scan.is_set()
+
     # Transform to llmguardt2-style summary
     summary = transform_findings_to_summary(provider, findings)
+    if cancelled:
+        summary["cancelled"] = True
 
     return jsonify(summary)
+
+
+@app.route("/api/scan/cancel", methods=["POST"])
+def cancel_scan():
+    _cancel_scan.set()
+    return jsonify({"status": "cancelling"})
 
 
 @app.route("/api/redteam", methods=["POST"])
@@ -258,6 +277,21 @@ def get_payloads(provider):
     payloads = [p.dict() for p in scanner.payloads]
 
     return jsonify({"provider": provider, "payloads": payloads})
+
+
+@app.route("/api/export/pdf", methods=["POST"])
+def export_pdf():
+    """Generate executive PDF report from scan data."""
+    from pdf_report import generate_pdf
+    data = request.json
+    pdf_bytes = generate_pdf(data)
+    provider = (data.get("provider") or "cloud").lower()
+    filename = f"cloudguard_{provider}_{__import__('datetime').datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.route("/health", methods=["GET"])

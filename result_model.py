@@ -19,13 +19,14 @@ class FindingStatus(str, Enum):
 
 
 class CISCategory(str, Enum):
-    """CIS AWS Foundations Benchmark categories"""
-    STORAGE = "2.1"             # S3 & storage security
-    LOGGING = "2.3"             # Logging & monitoring
-    NETWORKING = "5.1"          # Network security
-    IAM = "1.1"                 # Identity & access management
-    ENCRYPTION = "2.1"          # Data protection
+    """CIS Cloud Security Benchmark categories"""
+    IAM = "1"                   # Identity & access management
+    STORAGE = "2"               # Storage & data protection
+    LOGGING = "6"               # Logging & monitoring / observability
+    NETWORKING = "5"            # Network security
     COMPLIANCE = "3"            # Compliance
+    SECRETS = "8"               # Secrets management (Key Vault)
+    POLICY = "9"                # Policy enforcement (Defender)
 
 
 class EnhancedFinding(BaseModel):
@@ -40,6 +41,8 @@ class EnhancedFinding(BaseModel):
     severity_original: str         # Original severity (CRITICAL, HIGH, etc.)
     finding: str
     remediation: str
+    remediation_cli: str = ""      # Exact CLI command to fix (az / gcloud / aws)
+    remediation_tf: str = ""       # Drop-in Terraform resource block
     is_vulnerable: bool
 
 
@@ -117,16 +120,18 @@ def calculate_confidence(severity: str, is_vulnerable: bool, check_type: str = "
 
 def get_cis_category(cis_control: str) -> CISCategory:
     """Map CIS control to category"""
-    if cis_control.startswith("2.1"):
-        return CISCategory.STORAGE
-    elif cis_control.startswith("2.3"):
-        return CISCategory.LOGGING
-    elif cis_control.startswith("5.1"):
-        return CISCategory.NETWORKING
-    elif cis_control.startswith("1"):
+    if cis_control.startswith("1"):
         return CISCategory.IAM
-    elif cis_control.startswith("3"):
-        return CISCategory.COMPLIANCE
+    elif cis_control.startswith("2") or cis_control.startswith("3"):
+        return CISCategory.STORAGE
+    elif cis_control.startswith("5"):
+        return CISCategory.NETWORKING
+    elif cis_control.startswith("6"):
+        return CISCategory.LOGGING
+    elif cis_control.startswith("8"):
+        return CISCategory.SECRETS
+    elif cis_control.startswith("9"):
+        return CISCategory.POLICY
     else:
         return CISCategory.STORAGE  # Default
 
@@ -134,11 +139,12 @@ def get_cis_category(cis_control: str) -> CISCategory:
 def get_category_name(category: CISCategory) -> str:
     """Get human-readable category name"""
     names = {
-        CISCategory.STORAGE: "Storage & Data Protection (2.1)",
-        CISCategory.LOGGING: "Logging & Monitoring (2.3)",
-        CISCategory.NETWORKING: "Network Security (5.1)",
-        CISCategory.IAM: "Identity & Access (1.1)",
-        CISCategory.ENCRYPTION: "Encryption (2.1)",
+        CISCategory.IAM: "Identity & Access (1)",
+        CISCategory.STORAGE: "Storage & Data Protection (2/3)",
+        CISCategory.NETWORKING: "Network Security (5)",
+        CISCategory.LOGGING: "Observability & Logging (6)",
+        CISCategory.SECRETS: "Secrets Management (8)",
+        CISCategory.POLICY: "Policy Enforcement (9)",
         CISCategory.COMPLIANCE: "Compliance (3)",
     }
     return names.get(category, "Unknown")

@@ -36,6 +36,8 @@ class ScanFinding(BaseModel):
     finding: str
     cis_control: str
     remediation: str
+    remediation_cli: str = ""      # Exact CLI command to fix
+    remediation_tf: str = ""       # Drop-in Terraform resource block
     is_vulnerable: bool
 
 
@@ -57,7 +59,7 @@ class Scanner:
         self.provider = provider
         self.findings: List[ScanFinding] = []
 
-    def scan(self, credentials: Dict[str, Any]) -> List[ScanFinding]:
+    def scan(self, credentials: Dict[str, Any], selected_checks: List[str] = None, cancel_event=None) -> List[ScanFinding]:
         """Execute scan (provider-specific implementation)"""
         raise NotImplementedError
 
@@ -159,12 +161,14 @@ class AWSScanner(Scanner):
             ),
         ]
 
-    def scan(self, credentials: Dict[str, Any]) -> List[ScanFinding]:
+    def scan(self, credentials: Dict[str, Any], selected_checks: List[str] = None, cancel_event=None) -> List[ScanFinding]:
         """Execute AWS S3 scan"""
         from aws_s3 import S3Scanner
-        
+
         s3_scanner = S3Scanner(credentials)
         findings = s3_scanner.scan()
+        if selected_checks:
+            findings = [f for f in findings if f.check_id in selected_checks]
         return findings
 
 
@@ -179,34 +183,144 @@ class AzureScanner(Scanner):
                 name="Storage Account Public Access",
                 description="Check if Azure Storage allows public blob access",
                 category="Storage",
-                cis_control="2.1.3",
+                cis_control="3.1",
                 provider=CloudProvider.AZURE,
                 check_func="check_storage_public_acl",
             ),
             Payload(
-                payload_id="azure_rbac_overperm_001",
-                name="RBAC Over-Permissive Assignment",
-                description="Detect Owner/Contributor roles on non-service accounts",
+                payload_id="azure_storage_https_001",
+                name="Storage Account HTTPS Only",
+                description="Verify HTTPS-only traffic is enforced",
+                category="Storage",
+                cis_control="3.2",
+                provider=CloudProvider.AZURE,
+                check_func="check_storage_https",
+            ),
+            Payload(
+                payload_id="azure_storage_softdelete_001",
+                name="Blob Soft Delete",
+                description="Check if soft delete is enabled (min 7-day retention)",
+                category="Storage",
+                cis_control="3.3",
+                provider=CloudProvider.AZURE,
+                check_func="check_storage_softdelete",
+            ),
+            Payload(
+                payload_id="azure_rbac_broad_001",
+                name="Broad RBAC Role Assignment",
+                description="Detect Owner/Contributor roles on user accounts at subscription scope",
                 category="IAM",
                 cis_control="1.3",
                 provider=CloudProvider.AZURE,
-                check_func="check_rbac_overpermissive",
+                check_func="check_rbac_broad",
             ),
             Payload(
                 payload_id="azure_nsg_001",
-                name="Network Security Group Overly Open",
-                description="Check for RDP/SSH open to 0.0.0.0/0",
+                name="NSG Open to Internet",
+                description="Check for RDP/SSH/WinRM open to 0.0.0.0/0",
                 category="Network",
                 cis_control="5.1",
                 provider=CloudProvider.AZURE,
                 check_func="check_nsg_open",
             ),
+            Payload(
+                payload_id="azure_keyvault_exists_001",
+                name="Key Vault Exists",
+                description="Check if any Key Vaults exist (secrets may be in plaintext otherwise)",
+                category="IAM",
+                cis_control="8.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_keyvault_exists",
+            ),
+            Payload(
+                payload_id="azure_keyvault_softdelete_001",
+                name="Key Vault Soft Delete",
+                description="Verify soft delete and purge protection are enabled",
+                category="IAM",
+                cis_control="8.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_keyvault_softdelete",
+            ),
+            Payload(
+                payload_id="azure_keyvault_public_001",
+                name="Key Vault Public Network Access",
+                description="Check if Key Vault is accessible from all networks",
+                category="Network",
+                cis_control="8.2",
+                provider=CloudProvider.AZURE,
+                check_func="check_keyvault_public",
+            ),
+            Payload(
+                payload_id="azure_monitor_actlog_001",
+                name="Activity Log Retention",
+                description="Verify Activity Log profile exists with >= 90 day retention",
+                category="Logging",
+                cis_control="6.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_monitor_actlog",
+            ),
+            Payload(
+                payload_id="azure_monitor_diag_001",
+                name="Subscription Diagnostic Settings",
+                description="Check if diagnostic settings are configured at subscription scope",
+                category="Logging",
+                cis_control="6.2",
+                provider=CloudProvider.AZURE,
+                check_func="check_monitor_diag",
+            ),
+            Payload(
+                payload_id="azure_defender_storageaccounts_001",
+                name="Defender for Storage",
+                description="Check if Microsoft Defender for Storage is enabled (Standard tier)",
+                category="Logging",
+                cis_control="9.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_defender_storage",
+            ),
+            Payload(
+                payload_id="azure_defender_virtualmachines_001",
+                name="Defender for Servers",
+                description="Check if Microsoft Defender for Servers is enabled (Standard tier)",
+                category="Logging",
+                cis_control="9.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_defender_vms",
+            ),
+            Payload(
+                payload_id="azure_defender_sqlservers_001",
+                name="Defender for SQL",
+                description="Check if Microsoft Defender for SQL is enabled (Standard tier)",
+                category="Logging",
+                cis_control="9.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_defender_sql",
+            ),
+            Payload(
+                payload_id="azure_defender_appservices_001",
+                name="Defender for App Services",
+                description="Check if Microsoft Defender for App Services is enabled (Standard tier)",
+                category="Logging",
+                cis_control="9.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_defender_appservices",
+            ),
+            Payload(
+                payload_id="azure_defender_keyvaults_001",
+                name="Defender for Key Vault",
+                description="Check if Microsoft Defender for Key Vault is enabled (Standard tier)",
+                category="Logging",
+                cis_control="9.1",
+                provider=CloudProvider.AZURE,
+                check_func="check_defender_keyvaults",
+            ),
         ]
 
-    def scan(self, credentials: Dict[str, Any]) -> List[ScanFinding]:
-        """Placeholder: Will implement Azure SDK integration"""
-        print("[AzureScanner] Scan mode: read-only checks (no credentials used yet)")
-        return []
+    def scan(self, credentials: Dict[str, Any], selected_checks: List[str] = None, cancel_event=None) -> List[ScanFinding]:
+        from azure_scanner import AzureLiveScanner
+        findings = AzureLiveScanner(credentials).scan(cancel_event=cancel_event)
+        if selected_checks:
+            findings = [f for f in findings if f.check_id in selected_checks]
+        return findings
 
 
 class GCPScanner(Scanner):
@@ -244,7 +358,6 @@ class GCPScanner(Scanner):
             ),
         ]
 
-    def scan(self, credentials: Dict[str, Any]) -> List[ScanFinding]:
+    def scan(self, credentials: Dict[str, Any], selected_checks: List[str] = None, cancel_event=None) -> List[ScanFinding]:
         """Placeholder: Will implement Google Cloud SDK integration"""
-        print("[GCPScanner] Scan mode: read-only checks (no credentials used yet)")
         return []

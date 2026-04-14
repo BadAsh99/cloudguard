@@ -1,1 +1,9 @@
 app.log
+.env
+.env.*
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.DS_Store
