@@ -3,7 +3,6 @@
 > **Enterprise Cloud Red-Teaming & Compliance Assessment Framework**  
 > Multi-cloud vulnerability scanner with compliance mapping, attack chain simulation, and CIS Benchmark alignment for AWS, Azure, and GCP
 
-![Production Ready](https://img.shields.io/badge/Status-Production_Ready-green)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-black?logo=flask)
 ![AWS](https://img.shields.io/badge/AWS-boto3-orange?logo=amazonaws)
